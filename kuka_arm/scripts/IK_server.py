@@ -22,18 +22,6 @@ import numpy as np
 import time
 import math
 
-#define global variables
-T0_1 = 0
-T1_2 = 0
-T2_3 = 0
-T3_4 = 0
-T4_5 = 0
-T5_6 = 0
-T6_7 = 0
-Tcorr = 0
-T_total = 0
-R_corr = 0
-R_EE = 0
 
 #Setting up global Parameters
 q1, q2, q3, q4, q5, q6, q7 = symbols('q1:8')
@@ -66,9 +54,9 @@ R_x = Matrix([[1, 0, 0],
               [0, cos(rollsym), -sin(rollsym)],
               [0, sin(rollsym), cos(rollsym)]])
 
-#Run once function to do some dirty dirty math before we start collecting EE poses
-def setupvariables():
-    global T0_1, T1_2, T2_3, T3_4, T4_5, T5_6, T6_7, T_total, R_EE, R_x, R_y, R_z,R_corr
+#Run the function before the IK to save time. Thanks to forums for this...
+def initalization():
+    global T0_1, T1_2, T2_3, T3_4, T4_5, T5_6, T6_7, T_Final, R_EE, R_x, R_y, R_z,R_corr
 
     #The forward kinematic transforms.  Ripped right from the lectures.
     T0_1 = Matrix([[             cos(q1),            -sin(q1),            0,              a0],
@@ -129,14 +117,13 @@ def setupvariables():
 
 
     #The final total homogenous transformation in all its glory.
-    T_total = T0_7 * R_corr
+    T_Final = T0_7 * R_corr
     
 #The Ros srv function.
 def handle_calculate_IK(req):
-    global R_EE,R_corr
+    global R_EE,R_corr, T_Final
     rospy.loginfo("Received %s eef-poses from the plan" % len(req.poses))
-    
-    #Make sure we got poses. Sometimes we do not get poses and it angers me because this sends raises an exception
+
     if len(req.poses) < 1:
         print "No valid poses received"
         return -1 #It shouldn't be this, but I don't know what it should be.
@@ -144,7 +131,8 @@ def handle_calculate_IK(req):
 
         # Initialize service response
         joint_trajectory_list = []
-        
+        # 0 out our thetas for fun and initialization
+        theta1 = theta2 = theta3 = theta4 = theta5 = theta6 = 0
         for x in xrange(0, len(req.poses)):
             # IK code starts here
         
@@ -232,14 +220,23 @@ def handle_calculate_IK(req):
             # Adding our joints to the list to send back.
             joint_trajectory_point.positions = [theta1, theta2, theta3, theta4, theta5, theta6]
             joint_trajectory_list.append(joint_trajectory_point)
-            
+
+            print("Poses")
+            print("x", px, "y", py, "z", pz)
+            print("roll", roll, "pitch", pitch, "yaw", yaw)
+
+            T_Final = T_Final.evalf(subs={q1: theta1, q2: theta2, q3: theta3, q4: theta4, q5: theta5, q6: theta6})
+            print("Forward Kinematics to end:")
+            print(T_Final)
+
+
         rospy.loginfo("length of Joint Trajectory List: %s" % len(joint_trajectory_list))
         return CalculateIKResponse(joint_trajectory_list)
 
 
 def IK_server():
     # initialize node and declare calculate_ik service
-    setupvariables()
+    initalization()
     rospy.init_node('IK_server')
     s = rospy.Service('calculate_ik', CalculateIK, handle_calculate_IK)
     print "Ready to receive an IK request"
