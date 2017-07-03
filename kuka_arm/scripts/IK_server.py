@@ -202,14 +202,14 @@ def handle_calculate_IK(req):
             # in a rotation matrix
             R3_6 = (R0_3)**-1 * R_EE[0:3,0:3]
 
-            # Thanks classmate who listed this formula for taking the rotation to euler!  Saved me a lot of trig.
+            # formula for taking the rotation to euler
             (theta4, theta5, theta6) = tf.transformations.euler_from_matrix(np.array(R3_6[0:3,0:3]).astype(np.float64),"ryzx")
 
             
             #Theta 5 needed a translate, figured this out by the 0 case
             theta5 = (theta5 - np.pi/2)
             
-            # Sometimes theta 5 likes to go crazy and bump into itself.  This stops that.
+            #theta 5 likes to go crazy and bump into itself.  This stops that.
             if (theta5 > 2):
                 theta5 = 2
             if (theta5 < -2):
