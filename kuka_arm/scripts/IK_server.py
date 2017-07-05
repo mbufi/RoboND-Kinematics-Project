@@ -63,7 +63,7 @@ R_x = Matrix([[1, 0, 0],
               [0, cos(rollsymbol), -sin(rollsymbol)],
               [0, sin(rollsymbol), cos(rollsymbol)]])
 
-#Run the function before the IK to save time. Thanks to forums for this...
+#Run the function before the IK to save time
 def initalization():
     global T0_1, T1_2, T2_3, T3_4, T4_5, T5_6, T6_7, T_Final, R_EE, R_x, R_y, R_z,R_corr
 
@@ -125,7 +125,7 @@ def initalization():
     R_corr = R_zz * R_yy
 
 
-    #The final total homogenous transformation in all its glory.
+    #The final total homogenous transformation
     T_Final = T0_7 * R_corr
     
 #The Ros srv function.
