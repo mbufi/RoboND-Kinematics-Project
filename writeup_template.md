@@ -84,16 +84,18 @@ T0_7 = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_7
 This "T0_7" represents the transform from the base_link to the gripper_link ... in theory. After some trial and error, it was brought to my attention that the URDF file that describes the arm does 2 final twists to the gripper that the table doesn't include! Therefore we must account for them: 
 
 ```python
-#Fixing the gripper from the URDF file
-    R_zz = Matrix([[ cos(np.pi), -sin(np.pi), 0,0],
-              [ sin(np.pi),  cos(np.pi), 0,0],
-              [          0,           0, 1,0],
-              [          0,           0, 0,1]])
-    R_yy = Matrix([[  cos(-np.pi/2), 0, sin(-np.pi/2),0],
-              [              0, 1,             0,0],
-              [ -sin(-np.pi/2), 0, cos(-np.pi/2),0],
-              [              0, 0,             0,1]])
-R_corr = R_zz * R_yy
+# Correction for orientation difference between defintion of gripper link URDF v DH
+# first rotate around z-axis by pi
+R_z = Matrix([[cos(np.pi), -sin(np.pi), 0, 0],
+             [sin(np.pi), cos(np.pi), 0, 0],
+             [0, 0, 1, 0],
+             [0, 0, 0, 1]])
+# then rotate around y-axis by -pi/2
+R_y = Matrix([[cos(-np.pi / 2), 0, sin(-np.pi / 2), 0],
+             [0, 1, 0, 0],
+             [-sin(-np.pi / 2), 0, cos(-np.pi / 2), 0],
+             [0, 0, 0, 1]])
+R_corr = R_z * R_y
 
 ```
 
@@ -110,18 +112,18 @@ So therefore, we need to come up with the transform using the end effector's pos
 Setting up the roll/pitch/yaw as such:
 
 ```python
-#To calculate for end effector
-R_z = Matrix([[cos(yawsymbol), -sin(yawsymbol), 0],
-              [sin(yawsymbol), cos(yawsymbol), 0],
-              [0, 0, 1]])
+ # To calculate for end effector
+R_roll = Matrix([[1, 0, 0],
+              [0, cos(roll), -sin(roll)],
+              [0, sin(roll), cos(roll)]])
 
-R_y = Matrix([[cos(pitchsymbol), 0, sin(pitchsymbol)],
-              [0, 1, 0],
-              [-sin(pitchsymbol), 0, cos(pitchsymbol)]])
+R_pitch = Matrix([[cos(pitch), 0, sin(pitch)],
+               [0, 1, 0],
+               [-sin(pitch), 0, cos(pitch)]])
 
-R_x = Matrix([[1, 0, 0],
-              [0, cos(rollsymbol), -sin(rollsymbol)],
-[0, sin(rollsymbol), cos(rollsymbol)]])
+R_yaw = Matrix([[cos(yaw), -sin(yaw), 0],
+             [sin(yaw), cos(yaw), 0],
+             [0, 0, 1]])
 ```
 Then we subsitute in the values for roll/pitch/yaw given from the End Effector, after converting from quarternions:
 ```python
@@ -130,7 +132,7 @@ Then we subsitute in the values for roll/pitch/yaw given from the End Effector, 
                     req.poses[x].orientation.z, req.poses[x].orientation.w])
 
 #final rotation of end effector.
-R_EE = (R_x * R_y * R_z).evalf(subs={rollsymbol:roll,pitchsymbol:pitch,yawsymbol:yaw})
+R_EE = (R_roll * R_pitch * R_yaw)
 ```
 This finally gives us the rotational part of the solution. 
 
@@ -229,6 +231,20 @@ if (theta5 < -2):
 #Due to 0 case, translate theta 6 by 90 degrees
 theta6 = theta6 - np.pi/2
 ```
+NOTE: theta 5 crashes into itself for some reason... so it was nessary to basically "clip" the angles in order for it to not do that.
+
+### Results Discussion
+The video of the arm can be see here:
+
+It doesn't pick up every time, due to some wonky path planning that the project wants the arm to do.
+
+Also, I chnaged the .cpp file a little bit to allow the gripper to work better when in continuous mode on RViz. This allowed for testing to be smoother.
+
+### Areas of improvement
+Sometimes the arm arrives at the correct point, and in other cases, it comes from the side which makes it bump into the object when in the grasping state. It is very clear that the arm is in the right pose, therefore I believe it is not my inverse kinematics being the issue, but rather an issue with the motion planning algorithm. You can also see this type of behaviour in the demo mode as well.
+
+If I had more time to impove the project, I would look into optimizing the code to make the arm smoother in its path planning, the Inverse kinematics to be smoother and have more efficient results.
+
 
 
 
