@@ -2,7 +2,7 @@
 
 [//]: # (Image References)
 
-[image1]: ./misc_images/kinematicArm
+[image1]: ./misc_images/kinematicArm.PNG
 [image2]: ./misc_images/theta1.PNG
 [image3]: ./misc_images/theta2.PNG
 
