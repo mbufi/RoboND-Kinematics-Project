@@ -5,7 +5,7 @@
 [image1]: ./misc_images/kinematicArm.PNG
 [image2]: ./misc_images/theta1.PNG
 [image3]: ./misc_images/theta2.PNG
-[image4]: ./misc_images/working.PNG
+[image4]: ./misc_images/working.png
 
 ### Kinematic Analysis
 The kuka arm to be analyzed looks as follows: 
