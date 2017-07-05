@@ -238,11 +238,12 @@ NOTE: theta 5 crashes into itself for some reason... so it was nessary to basica
 The video of the arm can be see here: (not yet uploaded.)
 
 Here is a sample picture of it after it grabbed an item and dropped it in the box. It is now in the process of grabbing the second item.
+
 ![working][image4]
 
-It doesn't pick up every time, due to some wonky path planning that the project wants the arm to do.
+It doesn't pick up every time, due to some wonky path planning that the project wants the arm to do. It also sometimes bumps into the bin, which is again, a problem with the path planning.
 
-Also, I chnaged the .cpp file a little bit to allow the gripper to work better when in continuous mode on RViz. This allowed for testing to be smoother.
+Also, I changed the .cpp file a little bit to allow the gripper to work better when in continuous mode on RViz. This allowed for testing to be smoother.
 
 ### Areas of improvement
 Sometimes the arm arrives at the correct point, and in other cases, it comes from the side which makes it bump into the object when in the grasping state. It is very clear that the arm is in the right pose, therefore I believe it is not my inverse kinematics being the issue, but rather an issue with the motion planning algorithm. You can also see this type of behaviour in the demo mode as well.
