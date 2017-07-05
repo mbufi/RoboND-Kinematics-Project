@@ -599,3 +599,4 @@ int main(int argc, char **argv)
   TrajectorySampler plan_sampler(nh);
   return 0;
 }
+
