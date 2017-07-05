@@ -104,6 +104,38 @@ Then applying the correction to the T0_7:
 T_Final = T0_7 * R_corr
 ```
 
+This T_final represents the generic one with symbols that can be substituted with actual values when the time comes. 
+
+So therefore, we need to come up with the transform using the end effector's position and the ROLL/PITCH/YAW.
+Setting up the roll/pitch/yaw as such:
+
+```python
+#To calculate for end effector
+R_z = Matrix([[cos(yawsymbol), -sin(yawsymbol), 0],
+              [sin(yawsymbol), cos(yawsymbol), 0],
+              [0, 0, 1]])
+
+R_y = Matrix([[cos(pitchsymbol), 0, sin(pitchsymbol)],
+              [0, 1, 0],
+              [-sin(pitchsymbol), 0, cos(pitchsymbol)]])
+
+R_x = Matrix([[1, 0, 0],
+              [0, cos(rollsymbol), -sin(rollsymbol)],
+[0, sin(rollsymbol), cos(rollsymbol)]])
+```
+Then we subsitute in the values for roll/pitch/yaw given from the End Effector, after converting from quarternions:
+```python
+(roll, pitch, yaw) = tf.transformations.euler_from_quaternion(
+                [req.poses[x].orientation.x, req.poses[x].orientation.y,
+                    req.poses[x].orientation.z, req.poses[x].orientation.w])
+
+#final rotation of end effector.
+R_EE = (R_x * R_y * R_z).evalf(subs={rollsymbol:roll,pitchsymbol:pitch,yawsymbol:yaw})
+```
+This finally gives us the rotational part of the solution. 
+
+The last position is provided in just a coordinate of (x,y,z). The final steps break down into Inverse kinematics.
+
 #### 2. Using the DH parameter table you derived earlier, create individual transformation matrices about each joint. In addition, also generate a generalized homogeneous transform between base_link and gripper_link using only end-effector(gripper) pose.
 
 
