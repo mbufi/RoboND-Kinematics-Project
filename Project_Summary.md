@@ -5,6 +5,7 @@
 [image1]: ./misc_images/kinematicArm.PNG
 [image2]: ./misc_images/theta1.PNG
 [image3]: ./misc_images/theta2.PNG
+[image4]: ./misc_images/working.PNG
 
 ### Kinematic Analysis
 The kuka arm to be analyzed looks as follows: 
@@ -234,7 +235,10 @@ theta6 = theta6 - np.pi/2
 NOTE: theta 5 crashes into itself for some reason... so it was nessary to basically "clip" the angles in order for it to not do that.
 
 ### Results Discussion
-The video of the arm can be see here:
+The video of the arm can be see here: (not yet uploaded.)
+
+Here is a sample picture of it after it grabbed an item and dropped it in the box. It is now in the process of grabbing the second item.
+![working][image4]
 
 It doesn't pick up every time, due to some wonky path planning that the project wants the arm to do.
 
