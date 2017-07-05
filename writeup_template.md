@@ -3,8 +3,8 @@
 [//]: # (Image References)
 
 [image1]: ./misc_images/kinematicArm
-[image2]: ./misc_images/misc2.png
-[image3]: ./misc_images/misc3.png
+[image2]: ./misc_images/theta1.PNG
+[image3]: ./misc_images/theta2.PNG
 
 ### Kinematic Analysis
 The kuka arm to be analyzed looks as follows: 
@@ -136,10 +136,73 @@ This finally gives us the rotational part of the solution.
 
 The last position is provided in just a coordinate of (x,y,z). The final steps break down into Inverse kinematics.
 
-#### 2. Using the DH parameter table you derived earlier, create individual transformation matrices about each joint. In addition, also generate a generalized homogeneous transform between base_link and gripper_link using only end-effector(gripper) pose.
-
 
 #### 3. Decouple Inverse Kinematics problem into Inverse Position Kinematics and inverse Orientation Kinematics; doing so derive the equations to calculate all individual joint angles.
 
+This problem can be broken down into 3 parts:
+1.Finding the wrist
+2.theta 1,2,3 
+3.theta 4,5,6
 
+##### Finding the wrist
+The wrist is labelled as joint 5. This joint is 0.303 meters away from the end effector's position. There it was needed to take the rotation from the end effector and apply it to the end effector's position in the x,y,z dir. 
+therefore:
+wristPosition = (end_effectorPosition - (d6 + d7) * Rotation of end_effector)
+```python
+wx = (px - (d6 + d7) * R_EE[0,0]).subs(s)
+wy = (py - (d6 + d7) * R_EE[1,0]).subs(s)
+wz = (pz - (d6 + d7) * R_EE[2,0]).subs(s)
+```
+Now that the wrist is solved, you can use this to figure out the Inverse Position kinematics:
+##### The Inverse Position Kinematics: Theta 1 2 3
 
+Theta1/rotation around the base is the most simple theta to find.  An example given in the lecture for a RRP manipulator was provided, therefore the same rules were applied here:
+```python
+theta1 = atan2(wy, wx)
+```
+![Theta1][image2]
+
+The real challenge came when calculating theta 2 and 3. After looking at various text books, I stumbled across a diagram that was critical to my understanding in solving these two angles. A
+
+![Theta2][image3]
+
+Along with reading the Slack channel and asking other students, turns out that there is a small misalingment in the robots arm after joint 4. This is the A of -0.053 in the DH parameters. The trig then worked itself out:
+```python 
+# Need to account for 0.054
+internal_angle = atan2(wz - 1.94645, wx)
+wx = wx - 0.054 * sin(internal_angle)
+wz = wz + 0.054 * cos(internal_angle)
+```
+With this "recalculation" of the wrist, it is now aligned with the diagram above. Before this little addition, the wrist was always off by a little bit due to the crook in joint 4.
+```python 
+# Finding the distance from the origin to the newly slightly moved wrist center
+wxdist = sqrt(wy*wy+wx*wx)
+
+# grab the lengths for the segments to calculate theta 2/3 from DH table
+l1 = s[a2]
+l2 = s[d4]
+
+# Moving the second joint to the origin to make the math cleaner later.
+wxdist = wxdist - s[a1]
+wzdist = wz - s[d1]
+
+# Cosine law
+D=(wxdist*wxdist + wzdist*wzdist - l1*l1-l2*l2)/(2*l1*l2)
+
+# Clip d from going above 1
+if (D>1):
+ D=1
+
+theta3 = atan2(-sqrt(1-D*D),D)
+
+# equation Pulled from book
+sine = ((l1 + l2 * cos(theta3)) * wzdist - l2 * sin(theta3) * wxdist) / (wxdist * wxdist + wzdist * wzdist)
+cosine = ((l1 + l2 * cos(theta3)) * wxdist + l2 * sin(theta3) * wzdist) / (wxdist * wxdist + wzdist * wzdist)
+theta2 = atan2(sine, cosine)
+
+# Theta3 needs to be translated by 90 degrees
+theta3 = -1*(theta3+pi/2)
+theta2 = pi/2-theta2
+```
+
+##### The Inverse Position Kinematics: Theta 1 2 3
