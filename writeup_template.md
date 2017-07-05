@@ -13,7 +13,7 @@ The kuka arm to be analyzed looks as follows:
 This images results in the following DH table:
 
 i | Alpha | A | D | Theta
- --- | --- | --- | ---
+--- | --- | --- | --- | ---
 1 | 0| 0| 0.75 | Q1
 2 | -PI/2| 0.35| 0| Q2- PI/2
 3 | 0| 1.25|0|Q3
