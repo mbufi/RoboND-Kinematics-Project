@@ -19,8 +19,6 @@ import random
 from mpmath import *
 from sympy import *
 import numpy as np
-import time
-import math
 
 
 #Setting up global Parameters
@@ -28,9 +26,20 @@ q1, q2, q3, q4, q5, q6, q7 = symbols('q1:8')
 d1, d2, d3, d4, d5, d6, d7 = symbols('d1:8')
 a0, a1, a2, a3, a4, a5, a6 = symbols('a0:7')
 alpha0, alpha1, alpha2, alpha3, alpha4, alpha5, alpha6 = symbols('alpha0:7')
-rollsym = symbols('roll')
-pitchsym = symbols('pitch')
-yawsym = symbols('yaw')
+rollsymbol = symbols('roll')
+pitchsymbol = symbols('pitch')
+yawsymbol = symbols('yaw')
+
+T0_1 = 0
+T1_2 = 0
+T2_3 = 0
+T3_4 = 0
+T4_5 = 0
+T5_6 = 0
+T6_7 = 0
+T_Final = 0
+R_corr = 0
+R_EE = 0
 
 #Setting up global DH Table
 s = {alpha0:      0, a0:       0, d1:  0.75,
@@ -42,17 +51,17 @@ s = {alpha0:      0, a0:       0, d1:  0.75,
      alpha6:      0, a6:       0, d7: 0.303, q7: 0}
 
 #To calculate for end effector
-R_z = Matrix([[cos(yawsym), -sin(yawsym), 0],
-              [sin(yawsym), cos(yawsym), 0],
+R_z = Matrix([[cos(yawsymbol), -sin(yawsymbol), 0],
+              [sin(yawsymbol), cos(yawsymbol), 0],
               [0, 0, 1]])
 
-R_y = Matrix([[cos(pitchsym), 0, sin(pitchsym)],
+R_y = Matrix([[cos(pitchsymbol), 0, sin(pitchsymbol)],
               [0, 1, 0],
-              [-sin(pitchsym), 0, cos(pitchsym)]])
+              [-sin(pitchsymbol), 0, cos(pitchsymbol)]])
 
 R_x = Matrix([[1, 0, 0],
-              [0, cos(rollsym), -sin(rollsym)],
-              [0, sin(rollsym), cos(rollsym)]])
+              [0, cos(rollsymbol), -sin(rollsymbol)],
+              [0, sin(rollsymbol), cos(rollsymbol)]])
 
 #Run the function before the IK to save time. Thanks to forums for this...
 def initalization():
@@ -150,9 +159,9 @@ def handle_calculate_IK(req):
                     req.poses[x].orientation.z, req.poses[x].orientation.w])
 
             #final rotation of end effector.
-            R_EE = (R_x * R_y * R_z).evalf(subs={rollsym:roll,pitchsym:pitch,yawsym:yaw})
+            R_EE = (R_x * R_y * R_z).evalf(subs={rollsymbol:roll,pitchsymbol:pitch,yawsymbol:yaw})
             
-            # if that's where the EE is, where is the wrist?  We find it out from the rotation matrix 
+            # find the wrist from the rotation matrix
             wx = (px - (d6 + d7) * R_EE[0,0]).subs(s)
             wy = (py - (d6 + d7) * R_EE[1,0]).subs(s)
             wz = (pz - (d6 + d7) * R_EE[2,0]).subs(s)
@@ -167,7 +176,7 @@ def handle_calculate_IK(req):
             # Finding the distance from the origin to the newly slightly moved wrist center
             wxdist = sqrt(wy*wy+wx*wx)
 
-            # The lenghs of the segments we are usuing for theta2 & 3, they are in the DH table
+            # grab the lengths for the segments to calculate theta 2/3 from DH table
             l1 = s[a2]
             l2 = s[d4]
 
@@ -193,8 +202,6 @@ def handle_calculate_IK(req):
             theta3 = -1*(theta3+pi/2)
             theta2 = pi/2-theta2
 
-
-            
             # R0_3 is the rotation matrix up the wrist, we can now get this because we have theta1-theta3
             R0_3 = (T0_1 * T1_2 * T2_3).evalf(subs={q1:theta1,q2:theta2,q3:theta3})[0:3,0:3]
             
@@ -202,19 +209,19 @@ def handle_calculate_IK(req):
             # in a rotation matrix
             R3_6 = (R0_3)**-1 * R_EE[0:3,0:3]
 
-            # formula for taking the rotation to euler
+            # Formula for taking the rotation to euler
             (theta4, theta5, theta6) = tf.transformations.euler_from_matrix(np.array(R3_6[0:3,0:3]).astype(np.float64),"ryzx")
 
             
-            #Theta 5 needed a translate, figured this out by the 0 case
+            #Due to 0 case, translate theta 5 by 90 degrees
             theta5 = (theta5 - np.pi/2)
             
-            #theta 5 likes to go crazy and bump into itself.  This stops that.
+            # Sometimes theta 5 likes to go crazy and bump into itself.  This stops that.
             if (theta5 > 2):
                 theta5 = 2
             if (theta5 < -2):
                 theta5 = -2
-            #Theta 6 needed a translate, figured this out by the 0 case
+            #Due to 0 case, translate theta 6 by 90 degrees
             theta6 = theta6 - np.pi/2
 
             # Adding our joints to the list to send back.
