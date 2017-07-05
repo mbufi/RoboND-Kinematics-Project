@@ -194,9 +194,9 @@ def handle_calculate_IK(req):
             theta3 = atan2(-sqrt(1-D*D),D)
             
             # equation Pulled from book
-            sine = ((l1 + l2 * cos(theta3)) * wzdist - l2 * sin(theta3) * wxdist) / (wxdist * wxdist + wzdist * wzdist)
-            cosine = ((l1 + l2 * cos(theta3)) * wxdist + l2 * sin(theta3) * wzdist) / (wxdist * wxdist + wzdist * wzdist)
-            theta2 = atan2(sine, cosine)
+            s1 = ((l1 + l2 * cos(theta3)) * wzdist - l2 * sin(theta3) * wxdist) / (wxdist * wxdist + wzdist * wzdist)
+            c1 = ((l1 + l2 * cos(theta3)) * wxdist + l2 * sin(theta3) * wzdist) / (wxdist * wxdist + wzdist * wzdist)
+            theta2 = atan2(s1, c1)
             
             # Theta3 needs to be translated by 90 degrees
             theta3 = -1*(theta3+pi/2)
