@@ -67,7 +67,7 @@ R_x = Matrix([[1, 0, 0],
 def initalization():
     global T0_1, T1_2, T2_3, T3_4, T4_5, T5_6, T6_7, T_Final, R_EE, R_x, R_y, R_z,R_corr
 
-    #The forward kinematic transforms.  Ripped right from the lectures.
+    #The forward kinematic transforms
     T0_1 = Matrix([[             cos(q1),            -sin(q1),            0,              a0],
                [ sin(q1)*cos(alpha0), cos(q1)*cos(alpha0), -sin(alpha0), -sin(alpha0)*d1],
                [ sin(q1)*sin(alpha0), cos(q1)*sin(alpha0),  cos(alpha0),  cos(alpha0)*d1],
@@ -113,7 +113,7 @@ def initalization():
     #The link from the begginging all the way to the end
     T0_7 = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_7
     
-    #How to fix for gribber, ripped right from video
+    #Fixing the gripper from the URDF file
     R_zz = Matrix([[ cos(np.pi), -sin(np.pi), 0,0],
               [ sin(np.pi),  cos(np.pi), 0,0],
               [          0,           0, 1,0],
