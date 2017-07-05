@@ -22,7 +22,6 @@ import numpy as np
 
 # The Ros srv function.
 def handle_calculate_IK(req):
-    global R_EE, R_corr, T_Final
     rospy.loginfo("Received %s eef-poses from the plan" % len(req.poses))
 
     if len(req.poses) < 1:
