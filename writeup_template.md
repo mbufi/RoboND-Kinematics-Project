@@ -81,6 +81,8 @@ Then we combine each of the transforms to go from 0 - 7(gripper):
 ```python
 T0_7 = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_7
 ```
+This "T0_7" represents the transform from the base_link to the gripper_link ... in theory. After some trial and error, it was brought to my attention that the URDF file that describes the arm does 2 final twists to the gripper that the table doesn't include! Therefore we must account for them: 
+
 
 #### 2. Using the DH parameter table you derived earlier, create individual transformation matrices about each joint. In addition, also generate a generalized homogeneous transform between base_link and gripper_link using only end-effector(gripper) pose.
 
