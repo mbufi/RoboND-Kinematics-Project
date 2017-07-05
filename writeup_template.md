@@ -162,7 +162,7 @@ theta1 = atan2(wy, wx)
 ```
 ![Theta1][image2]
 
-The real challenge came when calculating theta 2 and 3. After looking at various text books, I stumbled across a diagram that was critical to my understanding in solving these two angles. A
+The real challenge came when calculating theta 2 and 3. After looking at various text books, I stumbled across a diagram that was critical to my understanding in solving these two angles. 
 
 ![Theta2][image3]
 
@@ -205,4 +205,30 @@ theta3 = -1*(theta3+pi/2)
 theta2 = pi/2-theta2
 ```
 
-##### The Inverse Position Kinematics: Theta 1 2 3
+##### The Inverse Position Kinematics: Theta 4 5 6
+
+The final three sections' rotations are equal to the (first three rotations inversed) * (the entire transform). We now know the first three rotations from theta 1 2 3, abd we have a known R0_6.
+Therefore to calculate the remaining 3 thetas, that formula gets you almost there:
+```python
+R3_6 = (R0_3)**-1 * R_EE[0:3,0:3]
+```
+Now convert that R3_6 into three euler angles that represent the robots last three angles. Using the function "euler_from_matrix" in the tf2 transformation library and the "ryzy" type of euler angle:
+```python 
+# Formula for taking the rotation to euler
+(theta4, theta5, theta6) = tf.transformations.euler_from_matrix(np.array(R3_6[0:3,0:3]).astype(np.float64),"ryzx")
+
+
+#Due to 0 case, translate theta 5 by 90 degrees
+theta5 = (theta5 - np.pi/2)
+
+# Sometimes theta 5 likes to go crazy and bump into itself.  This stops that.
+if (theta5 > 2):
+ theta5 = 2
+if (theta5 < -2):
+ theta5 = -2
+#Due to 0 case, translate theta 6 by 90 degrees
+theta6 = theta6 - np.pi/2
+```
+
+
+
